@@ -1,8 +1,10 @@
 import { User } from "../models/User.js";
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import sendMail, { sendForgotMail } from "../middlewares/sendMail.js";
 import TryCatch from "../middlewares/TryCatch.js";
+import { Rating } from "../models/Rating.js"; // ✅ correct
 
 export const register = TryCatch(async (req, res) => {
   const { email, name, password } = req.body;
@@ -163,4 +165,66 @@ export const resetPassword = TryCatch(async (req, res) => {
   await user.save();
 
   res.json({ message: "Password Reset" });
+});
+
+// export const submitRating = TryCatch(async (req, res) => {
+//   const { lectureId, rating, feedback } = req.body;
+//   const userId = req.user._id;
+
+//   if (!mongoose.Types.ObjectId.isValid(lectureId)) {
+//     return res.status(400).json({ message: "Invalid lecture ID" });
+//   }
+
+//   const existingRating = await Rating.findOne({
+//     user: userId,
+//     lectureId: lectureId,
+//   });
+
+//   if (existingRating) {
+//     return res.status(400).json({
+//       message: "Rating already submitted for this lecture",
+//     });
+//   }
+
+//   const newRating = await Rating.create({
+//     user: userId,
+//     lectureId,
+//     rating,
+//     feedback,
+//   });
+
+//   res.status(201).json({
+//     message: "Rating submitted successfully",
+//     rating: newRating,
+//   });
+// });
+// import mongoose from "mongoose"; // Make sure this is at the top
+
+export const submitRating = TryCatch(async (req, res) => {
+  const { courseId, rating, feedback } = req.body;
+  const userId = req.user._id;
+
+  // Check for existing rating
+  const existingRating = await Rating.findOne({
+    user: userId,
+    courseId: courseId,
+  });
+
+  if (existingRating) {
+    return res.status(400).json({
+      message: "Rating already submitted for this course",
+    });
+  }
+
+  const newRating = await Rating.create({
+    user: userId,
+    courseId,
+    rating,
+    feedback,
+  });
+
+  res.status(201).json({
+    message: "Rating submitted successfully",
+    rating: newRating,
+  });
 });
