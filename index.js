@@ -29,11 +29,13 @@ app.use("/uploads", express.static("uploads"));
 import userRoutes from "./routes/user.js";
 import courseRoutes from "./routes/course.js";
 import adminRoutes from "./routes/admin.js";
+import recommendationRoutes from "./routes/recommend.js";
 
 // using routes
 app.use("/api", userRoutes);
 app.use("/api", courseRoutes);
 app.use("/api", adminRoutes);
+app.use("/api", recommendationRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
