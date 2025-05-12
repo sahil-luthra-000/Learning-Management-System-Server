@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { connectDb } from "./database/db.js";
 import Razorpay from "razorpay";
 import cors from "cors";
-
+import fs from "fs";
 dotenv.config();
 
 export const instance = new Razorpay({
@@ -40,4 +40,10 @@ app.use("/api", recommendationRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   connectDb();
+});
+app.get("/list-uploads", (req, res) => {
+  fs.readdir("uploads", (err, files) => {
+    if (err) return res.status(500).send("Error reading uploads folder");
+    res.json(files);
+  });
 });

@@ -6,6 +6,7 @@ import { User } from "../models/User.js";
 import crypto from "crypto";
 import { Payment } from "../models/Payment.js";
 import { Progress } from "../models/Progress.js";
+import { Rating } from "../models/Rating.js";
 
 export const getAllCourses = TryCatch(async (req, res) => {
   const courses = await Courses.find();
@@ -156,23 +157,26 @@ export const addProgress = TryCatch(async (req, res) => {
 });
 
 export const getYourProgress = TryCatch(async (req, res) => {
-  const progress = await Progress.find({
-    user: req.user._id,
-    course: req.query.course,
-  });
+  const { _id: user } = req.user;
+  const { course: courseId } = req.query;
 
-  if (!progress) return res.status(404).json({ message: "null" });
+  const progress = await Progress.findOne({ user, course: courseId });
 
-  const allLectures = (await Lecture.find({ course: req.query.course })).length;
+  if (!progress)
+    return res.status(404).json({ message: "Progress not found" });
 
-  const completedLectures = progress[0].completedLectures.length;
-
+  const allLectures = await Lecture.countDocuments({ course: courseId });
+  const completedLectures = progress.completedLectures.length;
   const courseProgressPercentage = (completedLectures * 100) / allLectures;
+
+  // Fetch rating/feedback
+  const rating = await Rating.findOne({ user, courseId });
 
   res.json({
     courseProgressPercentage,
     completedLectures,
     allLectures,
     progress,
+    rating: rating?.rating || null,
   });
 });
